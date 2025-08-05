@@ -120,7 +120,7 @@ fun DateSelector(
         IconButton(onClick = {
             onDateSelected(selectedDate.minusDays(1))
         }) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Previous Day")
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Previous Day")
         }
         
         Row(
@@ -142,7 +142,7 @@ fun DateSelector(
         IconButton(onClick = {
             onDateSelected(selectedDate.plusDays(1))
         }) {
-            Icon(Icons.Default.ArrowForward, contentDescription = "Next Day")
+            Icon(Icons.Filled.ArrowForward, contentDescription = "Next Day")
         }
     }
     
