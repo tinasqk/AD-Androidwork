@@ -13,13 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -54,51 +57,160 @@ import java.time.ZoneId
 
 @Composable
 fun MoodScreen(viewModel: MoodViewModel) {
+    var journalTitle by remember { mutableStateOf("") }
+    var journalContent by remember { mutableStateOf("") }
+    var selectedMood by remember { mutableStateOf<MoodType?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
+        // Date selector (preserved from original)
         DateSelector(
             selectedDate = viewModel.selectedDate.value,
             onDateSelected = { viewModel.changeSelectedDate(it) }
         )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Today's Mood",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        
-        MoodSection(
-            title = "Morning",
-            timeOfDay = TimeOfDay.MORNING,
-            selectedMood = viewModel.getMoodForTimeOfDay(TimeOfDay.MORNING),
-            onMoodSelected = { mood -> 
-                viewModel.addMoodEntry(mood, TimeOfDay.MORNING)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Main content card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                // Date display
+                val selectedDate = viewModel.selectedDate.value
+                val dateText = "Today is ${selectedDate.dayOfMonth}${getDaySuffix(selectedDate.dayOfMonth)} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${selectedDate.year}."
+
+                Text(
+                    text = dateText,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = "Write into your journal, and log how you feel right now.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+
+                // How do you feel section
+                Text(
+                    text = "How do you feel?",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                // Mood selection buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    MoodButton(
+                        text = "Very Good",
+                        mood = MoodType.VERY_GOOD,
+                        isSelected = selectedMood == MoodType.VERY_GOOD,
+                        onSelect = { selectedMood = MoodType.VERY_GOOD }
+                    )
+                    MoodButton(
+                        text = "Good",
+                        mood = MoodType.GOOD,
+                        isSelected = selectedMood == MoodType.GOOD,
+                        onSelect = { selectedMood = MoodType.GOOD }
+                    )
+                    MoodButton(
+                        text = "Neutral",
+                        mood = MoodType.NEUTRAL,
+                        isSelected = selectedMood == MoodType.NEUTRAL,
+                        onSelect = { selectedMood = MoodType.NEUTRAL }
+                    )
+                    MoodButton(
+                        text = "Bad",
+                        mood = MoodType.BAD,
+                        isSelected = selectedMood == MoodType.BAD,
+                        onSelect = { selectedMood = MoodType.BAD }
+                    )
+                    MoodButton(
+                        text = "Very Bad",
+                        mood = MoodType.VERY_BAD,
+                        isSelected = selectedMood == MoodType.VERY_BAD,
+                        onSelect = { selectedMood = MoodType.VERY_BAD }
+                    )
+                }
+
+                // Journal title prompt
+                Text(
+                    text = "Start with a title to remember this day.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                // Title input field
+                OutlinedTextField(
+                    value = journalTitle,
+                    onValueChange = { journalTitle = it },
+                    placeholder = { Text("Today, I...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    shape = RoundedCornerShape(8.dp)
+                )
+
+                // Journal content input field
+                OutlinedTextField(
+                    value = journalContent,
+                    onValueChange = { journalContent = it },
+                    placeholder = { Text("Write about your day...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    maxLines = 10
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Save button
+                Button(
+                    onClick = {
+                        selectedMood?.let { mood ->
+                            viewModel.addMoodEntry(mood, TimeOfDay.MORNING) // You can modify this based on current time
+                            // Here you could also save the journal content
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Save & Continue",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
-        )
-        
-        MoodSection(
-            title = "Afternoon",
-            timeOfDay = TimeOfDay.AFTERNOON,
-            selectedMood = viewModel.getMoodForTimeOfDay(TimeOfDay.AFTERNOON),
-            onMoodSelected = { mood -> 
-                viewModel.addMoodEntry(mood, TimeOfDay.AFTERNOON)
-            }
-        )
-        
-        MoodSection(
-            title = "Evening",
-            timeOfDay = TimeOfDay.EVENING,
-            selectedMood = viewModel.getMoodForTimeOfDay(TimeOfDay.EVENING),
-            onMoodSelected = { mood -> 
-                viewModel.addMoodEntry(mood, TimeOfDay.EVENING)
-            }
-        )
+        }
     }
 }
 
@@ -182,125 +294,48 @@ fun DateSelector(
 }
 
 @Composable
-fun MoodSection(
-    title: String,
-    timeOfDay: TimeOfDay,
-    selectedMood: MoodType?,
-    onMoodSelected: (MoodType) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                MoodOption(
-                    mood = MoodType.VERY_GOOD,
-                    label = "Very Good",
-                    isSelected = selectedMood == MoodType.VERY_GOOD,
-                    onSelect = { onMoodSelected(MoodType.VERY_GOOD) }
-                )
-                
-                MoodOption(
-                    mood = MoodType.GOOD,
-                    label = "Good",
-                    isSelected = selectedMood == MoodType.GOOD,
-                    onSelect = { onMoodSelected(MoodType.GOOD) }
-                )
-                
-                MoodOption(
-                    mood = MoodType.NEUTRAL,
-                    label = "Neutral",
-                    isSelected = selectedMood == MoodType.NEUTRAL,
-                    onSelect = { onMoodSelected(MoodType.NEUTRAL) }
-                )
-                
-                MoodOption(
-                    mood = MoodType.BAD,
-                    label = "Bad",
-                    isSelected = selectedMood == MoodType.BAD,
-                    onSelect = { onMoodSelected(MoodType.BAD) }
-                )
-                
-                MoodOption(
-                    mood = MoodType.VERY_BAD,
-                    label = "Very Bad",
-                    isSelected = selectedMood == MoodType.VERY_BAD,
-                    onSelect = { onMoodSelected(MoodType.VERY_BAD) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MoodOption(
+fun MoodButton(
+    text: String,
     mood: MoodType,
-    label: String,
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {
-    val color = when (mood) {
-        MoodType.VERY_GOOD -> Color(0xFF4CAF50)
-        MoodType.GOOD -> Color(0xFF8BC34A)
-        MoodType.NEUTRAL -> Color(0xFFFFC107)
-        MoodType.BAD -> Color(0xFFFF9800)
-        MoodType.VERY_BAD -> Color(0xFFF44336)
+    val backgroundColor = when {
+        isSelected && mood == MoodType.VERY_BAD -> Color(0xFFDC3545)
+        isSelected -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
     }
-    
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onSelect() }
+
+    val textColor = when {
+        isSelected -> Color.White
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    Button(
+        onClick = onSelect,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor,
+            contentColor = textColor
+        ),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.height(36.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(if (isSelected) color else Color.LightGray.copy(alpha = 0.3f))
-                .border(
-                    width = if (isSelected) 2.dp else 0.dp,
-                    color = if (isSelected) color.copy(alpha = 0.7f) else Color.Transparent,
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            val emoji = when (mood) {
-                MoodType.VERY_GOOD -> "😄"
-                MoodType.GOOD -> "🙂"
-                MoodType.NEUTRAL -> "😐"
-                MoodType.BAD -> "🙁"
-                MoodType.VERY_BAD -> "😢"
-            }
-            Text(
-                text = emoji,
-                fontSize = 24.sp
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
         Text(
-            text = label,
+            text = text,
             fontSize = 12.sp,
-            textAlign = TextAlign.Center,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
         )
     }
-} 
+}
+
+// Helper function to get day suffix (1st, 2nd, 3rd, etc.)
+fun getDaySuffix(day: Int): String {
+    return when {
+        day in 11..13 -> "th"
+        day % 10 == 1 -> "st"
+        day % 10 == 2 -> "nd"
+        day % 10 == 3 -> "rd"
+        else -> "th"
+    }
+}
+
