@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Face
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,17 +24,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.nus.ui.screens.FeelScreen
 import com.example.nus.ui.screens.LifestyleScreen
 import com.example.nus.ui.screens.MoodScreen
-import com.example.nus.viewmodel.FeelViewModel
 import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
 
 sealed class Screen(val route: String, val title: String) {
     object Mood : Screen("mood", "Mood")
     object Lifestyle : Screen("lifestyle", "Lifestyle")
-    object Feel : Screen("feel", "Feel")
 }
 
 @Composable
@@ -44,14 +39,12 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val items = listOf(
         Screen.Mood,
-        Screen.Lifestyle,
-        Screen.Feel
+        Screen.Lifestyle
     )
-
+    
     // ViewModels
     val moodViewModel: MoodViewModel = viewModel()
     val lifestyleViewModel: LifestyleViewModel = viewModel()
-    val feelViewModel: FeelViewModel = viewModel()
     
     Scaffold(
         bottomBar = {
@@ -77,13 +70,6 @@ fun AppNavigation() {
                                         Icon(Icons.Filled.DateRange, contentDescription = null)
                                     } else {
                                         Icon(Icons.Outlined.DateRange, contentDescription = null)
-                                    }
-                                }
-                                Screen.Feel -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Favorite, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.FavoriteBorder, contentDescription = null)
                                     }
                                 }
                             }
@@ -114,9 +100,6 @@ fun AppNavigation() {
             }
             composable(Screen.Lifestyle.route) {
                 LifestyleScreen(viewModel = lifestyleViewModel)
-            }
-            composable(Screen.Feel.route) {
-                FeelScreen(viewModel = feelViewModel)
             }
         }
     }

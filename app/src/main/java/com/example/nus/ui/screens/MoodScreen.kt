@@ -120,42 +120,37 @@ fun MoodScreen(viewModel: MoodViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MoodButton(
-                        text = "Great",
+                        text = "Very Good",
                         mood = MoodType.VERY_GOOD,
                         isSelected = selectedMood == MoodType.VERY_GOOD,
-                        onSelect = { selectedMood = MoodType.VERY_GOOD },
-                        modifier = Modifier.weight(1f)
+                        onSelect = { selectedMood = MoodType.VERY_GOOD }
                     )
                     MoodButton(
                         text = "Good",
                         mood = MoodType.GOOD,
                         isSelected = selectedMood == MoodType.GOOD,
-                        onSelect = { selectedMood = MoodType.GOOD },
-                        modifier = Modifier.weight(1f)
+                        onSelect = { selectedMood = MoodType.GOOD }
                     )
                     MoodButton(
-                        text = "Okay",
+                        text = "Neutral",
                         mood = MoodType.NEUTRAL,
                         isSelected = selectedMood == MoodType.NEUTRAL,
-                        onSelect = { selectedMood = MoodType.NEUTRAL },
-                        modifier = Modifier.weight(1f)
+                        onSelect = { selectedMood = MoodType.NEUTRAL }
                     )
                     MoodButton(
                         text = "Bad",
                         mood = MoodType.BAD,
                         isSelected = selectedMood == MoodType.BAD,
-                        onSelect = { selectedMood = MoodType.BAD },
-                        modifier = Modifier.weight(1f)
+                        onSelect = { selectedMood = MoodType.BAD }
                     )
                     MoodButton(
-                        text = "Awful",
+                        text = "Very Bad",
                         mood = MoodType.VERY_BAD,
                         isSelected = selectedMood == MoodType.VERY_BAD,
-                        onSelect = { selectedMood = MoodType.VERY_BAD },
-                        modifier = Modifier.weight(1f)
+                        onSelect = { selectedMood = MoodType.VERY_BAD }
                     )
                 }
 
@@ -303,8 +298,7 @@ fun MoodButton(
     text: String,
     mood: MoodType,
     isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
+    onSelect: () -> Unit
 ) {
     val backgroundColor = when {
         isSelected && mood == MoodType.VERY_BAD -> Color(0xFFDC3545)
@@ -324,15 +318,12 @@ fun MoodButton(
             contentColor = textColor
         ),
         shape = RoundedCornerShape(20.dp),
-        modifier = modifier.height(36.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+        modifier = Modifier.height(36.dp)
     ) {
         Text(
             text = text,
-            fontSize = 10.sp,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            fontSize = 12.sp,
+            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
         )
     }
 }
