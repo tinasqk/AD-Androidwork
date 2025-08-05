@@ -17,17 +17,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-
-
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +51,9 @@ import androidx.compose.ui.unit.sp
 import com.example.nus.model.MoodType
 import com.example.nus.model.TimeOfDay
 import com.example.nus.viewmodel.MoodViewModel
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun MoodScreen(viewModel: MoodViewModel) {
@@ -58,6 +67,14 @@ fun MoodScreen(viewModel: MoodViewModel) {
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
+        // Date selector (preserved from original)
+        DateSelector(
+            selectedDate = viewModel.selectedDate.value,
+            onDateSelected = { viewModel.changeSelectedDate(it) }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Main content card
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -70,9 +87,9 @@ fun MoodScreen(viewModel: MoodViewModel) {
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                // Date display - using current date
-                val currentDate = LocalDate.now()
-                val dateText = "Today is ${currentDate.dayOfMonth}${getDaySuffix(currentDate.dayOfMonth)} ${currentDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${currentDate.year}."
+                // Date display
+                val selectedDate = viewModel.selectedDate.value
+                val dateText = "Today is ${selectedDate.dayOfMonth}${getDaySuffix(selectedDate.dayOfMonth)} ${selectedDate.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${selectedDate.year}."
 
                 Text(
                     text = dateText,
@@ -202,7 +219,84 @@ fun MoodScreen(viewModel: MoodViewModel) {
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateSelector(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = {
+            onDateSelected(selectedDate.minusDays(1))
+        }) {
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Previous Day")
+        }
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { showDatePicker = true }
+        ) {
+            Text(
+                text = selectedDate.toString(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
+            Icon(
+                imageVector = Icons.Default.CalendarMonth,
+                contentDescription = "Select Date"
+            )
+        }
+        
+        IconButton(onClick = {
+            onDateSelected(selectedDate.plusDays(1))
+        }) {
+            Icon(Icons.Filled.ArrowForward, contentDescription = "Next Day")
+        }
+    }
+    
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val newDate = Instant
+                            .ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        onDateSelected(newDate)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
 
 @Composable
 fun MoodButton(
