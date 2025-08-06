@@ -60,75 +60,72 @@ fun AppNavigation() {
     val moodViewModel: MoodViewModel = viewModel()
     val lifestyleViewModel: LifestyleViewModel = viewModel()
     val feelViewModel: FeelViewModel = viewModel()
-    
+
+    // 获取当前导航状态
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    // 定义需要显示底部导航栏的页面
+    val screensWithBottomBar = listOf(
+        Screen.Home.route,
+        Screen.Mood.route,
+        Screen.Lifestyle.route,
+        Screen.Feel.route,
+        Screen.LifestyleLogged.route
+    )
+
+    // 检查当前页面是否需要显示底部导航栏
+    val shouldShowBottomBar = currentDestination?.route in screensWithBottomBar
+
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                items.forEach { screen ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-                    
-                    NavigationBarItem(
-                        icon = {
-                            when (screen) {
-                                Screen.Login -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Home, contentDescription = null)
-                                    } else {
+            if (shouldShowBottomBar) {
+                NavigationBar {
+                    items.forEach { screen ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+
+                        NavigationBarItem(
+                            icon = {
+                                when (screen) {
+                                    Screen.Home -> {
+                                        if (selected) {
+                                            Icon(Icons.Filled.Home, contentDescription = null)
+                                        } else {
+                                            Icon(Icons.Outlined.Home, contentDescription = null)
+                                        }
+                                    }
+                                    Screen.Mood -> {
+                                        if (selected) {
+                                            Icon(Icons.Filled.Face, contentDescription = null)
+                                        } else {
+                                            Icon(Icons.Outlined.Face, contentDescription = null)
+                                        }
+                                    }
+                                    Screen.Lifestyle -> {
+                                        if (selected) {
+                                            Icon(Icons.Filled.DateRange, contentDescription = null)
+                                        } else {
+                                            Icon(Icons.Outlined.DateRange, contentDescription = null)
+                                        }
+                                    }
+                                    else -> {
                                         Icon(Icons.Outlined.Home, contentDescription = null)
                                     }
                                 }
-                                Screen.Home -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Home, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.Home, contentDescription = null)
+                            },
+                            label = { Text(screen.title) },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                                }
-                                Screen.Mood -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Face, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.Face, contentDescription = null)
-                                    }
-                                }
-                                Screen.Lifestyle -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.DateRange, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.DateRange, contentDescription = null)
-                                    }
-                                }
-                                Screen.Feel -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Favorite, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.FavoriteBorder, contentDescription = null)
-                                    }
-                                }
-                                Screen.LifestyleLogged -> {
-                                    if (selected) {
-                                        Icon(Icons.Filled.Home, contentDescription = null)
-                                    } else {
-                                        Icon(Icons.Outlined.Home, contentDescription = null)
-                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             }
-                        },
-                        label = { Text(screen.title) },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

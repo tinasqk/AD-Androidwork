@@ -173,7 +173,7 @@ fun FeelScreen(
                 
                 // Go Home button
                 Button(
-                    onClick = onNavigateToHome,
+                    onClick = onNavigateToHome,// 增加了导航回主页面的方式
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
