@@ -34,12 +34,14 @@ import com.example.nus.ui.screens.LifestyleLoggedScreen
 import com.example.nus.ui.screens.LifestyleScreen
 import com.example.nus.ui.screens.LoginScreen
 import com.example.nus.ui.screens.MoodScreen
+import com.example.nus.ui.screens.RegisterScreen
 import com.example.nus.viewmodel.FeelViewModel
 import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
 
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Login")
+    object Register : Screen("register", "Register")
     object Home : Screen("home", "Home")
     object Mood : Screen("mood", "Mood")
     object Lifestyle : Screen("lifestyle", "Lifestyle")
@@ -143,7 +145,19 @@ fun AppNavigation() {
                         }
                     },
                     onSignUpClick = {
-                        // TODO: Navigate to sign up screen
+                        navController.navigate(Screen.Register.route)
+                    }
+                )
+            }
+            composable(Screen.Register.route) {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Register.route) { inclusive = true }
+                        }
+                    },
+                    onBackToLogin = {
+                        navController.popBackStack()
                     }
                 )
             }
