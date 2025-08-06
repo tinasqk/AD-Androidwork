@@ -47,7 +47,10 @@ import com.example.nus.viewmodel.MoodViewModel
 import java.time.LocalDate
 
 @Composable
-fun MoodScreen(viewModel: MoodViewModel) {
+fun MoodScreen(
+    viewModel: MoodViewModel,
+    onNavigateToFeel: () -> Unit = {}
+) {
     var journalTitle by remember { mutableStateOf("") }
     var journalContent by remember { mutableStateOf("") }
     var selectedMood by remember { mutableStateOf<MoodType?>(null) }
@@ -181,6 +184,7 @@ fun MoodScreen(viewModel: MoodViewModel) {
                         selectedMood?.let { mood ->
                             viewModel.addMoodEntry(mood, TimeOfDay.MORNING) // You can modify this based on current time
                             // Here you could also save the journal content
+                            onNavigateToFeel() // Navigate to FeelScreen
                         }
                     },
                     modifier = Modifier

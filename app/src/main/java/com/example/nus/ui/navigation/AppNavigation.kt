@@ -44,8 +44,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val items = listOf(
         Screen.Mood,
-        Screen.Lifestyle,
-        Screen.Feel
+        Screen.Lifestyle
     )
 
     // ViewModels
@@ -110,7 +109,12 @@ fun AppNavigation() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Mood.route) {
-                MoodScreen(viewModel = moodViewModel)
+                MoodScreen(
+                    viewModel = moodViewModel,
+                    onNavigateToFeel = {
+                        navController.navigate(Screen.Feel.route)
+                    }
+                )
             }
             composable(Screen.Lifestyle.route) {
                 LifestyleScreen(viewModel = lifestyleViewModel)
