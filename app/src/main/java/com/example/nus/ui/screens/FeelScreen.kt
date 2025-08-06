@@ -43,7 +43,10 @@ import com.example.nus.viewmodel.FeelViewModel
 import java.time.LocalDate
 
 @Composable
-fun FeelScreen(viewModel: FeelViewModel) {
+fun FeelScreen(
+    viewModel: FeelViewModel,
+    onNavigateToHome: () -> Unit = {}
+) {
     var selectedFeel by remember { mutableStateOf<FeelType?>(null) }
     
     Column(
@@ -170,7 +173,7 @@ fun FeelScreen(viewModel: FeelViewModel) {
                 
                 // Go Home button
                 Button(
-                    onClick = { /* Navigate to home */ },
+                    onClick = onNavigateToHome,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),

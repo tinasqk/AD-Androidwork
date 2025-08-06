@@ -154,7 +154,18 @@ fun AppNavigation() {
                 LifestyleScreen(viewModel = lifestyleViewModel)
             }
             composable(Screen.Feel.route) {
-                FeelScreen(viewModel = feelViewModel)
+                FeelScreen(
+                    viewModel = feelViewModel,
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
         }
     }
