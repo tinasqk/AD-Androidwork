@@ -38,6 +38,7 @@ import com.example.nus.ui.screens.RegisterScreen
 import com.example.nus.viewmodel.FeelViewModel
 import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
+import com.example.nus.viewmodel.UserSessionViewModel
 
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Login")
@@ -59,6 +60,7 @@ fun AppNavigation() {
     )
 
     // ViewModels
+    val userSessionViewModel: UserSessionViewModel = viewModel()
     val moodViewModel: MoodViewModel = viewModel()
     val lifestyleViewModel: LifestyleViewModel = viewModel()
     val feelViewModel: FeelViewModel = viewModel()
@@ -139,7 +141,8 @@ fun AppNavigation() {
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = {
+                    onLoginSuccess = { userId, showEmotion ->
+                        userSessionViewModel.setUserSession(userId, showEmotion)
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
@@ -186,6 +189,7 @@ fun AppNavigation() {
             composable(Screen.Mood.route) {
                 MoodScreen(
                     viewModel = moodViewModel,
+                    userId = userSessionViewModel.userId.value,
                     onNavigateToFeel = {
                         navController.navigate(Screen.Feel.route)
                     }

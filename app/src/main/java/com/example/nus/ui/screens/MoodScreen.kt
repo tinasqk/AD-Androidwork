@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 
 
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,11 +51,19 @@ import java.time.LocalDate
 @Composable
 fun MoodScreen(
     viewModel: MoodViewModel,
-    onNavigateToFeel: () -> Unit = {}
+    onNavigateToFeel: () -> Unit = {},
+    userId: String = "" // 从登录响应传入的用户ID
 ) {
     var journalTitle by remember { mutableStateOf("") }
     var journalContent by remember { mutableStateOf("") }
     var selectedMood by remember { mutableStateOf<MoodType?>(null) }
+
+    // 设置用户ID
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            viewModel.setUserId(userId)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -176,15 +186,40 @@ fun MoodScreen(
                     maxLines = 10
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Error Message
+                viewModel.error.value?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
 
                 // Save button
                 Button(
                     onClick = {
                         selectedMood?.let { mood ->
-                            viewModel.addMoodEntry(mood, TimeOfDay.MORNING) // You can modify this based on current time
-                            // Here you could also save the journal content
-                            onNavigateToFeel() // Navigate to FeelScreen
+                            viewModel.submitJournalEntry(
+                                mood = mood,
+                                entryTitle = journalTitle,
+                                entryText = journalContent,
+                                emotions = emptyList(), // 可以后续添加情感选择功能
+                                onSuccess = {
+                                    // 清空表单
+                                    journalTitle = ""
+                                    journalContent = ""
+                                    selectedMood = null
+                                    onNavigateToFeel()
+                                },
+                                onError = { error ->
+                                    viewModel.error.value = error
+                                }
+                            )
+                        } ?: run {
+                            viewModel.error.value = "Please select your mood first"
                         }
                     },
                     modifier = Modifier
@@ -193,13 +228,21 @@ fun MoodScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !viewModel.isLoading.value
                 ) {
-                    Text(
-                        text = "Save & Continue",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    if (viewModel.isLoading.value) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Save & Continue",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
