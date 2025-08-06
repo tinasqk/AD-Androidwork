@@ -5,9 +5,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -27,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.nus.ui.screens.FeelScreen
+import com.example.nus.ui.screens.HomeScreen
 import com.example.nus.ui.screens.LifestyleScreen
 import com.example.nus.ui.screens.MoodScreen
 import com.example.nus.viewmodel.FeelViewModel
@@ -34,6 +37,7 @@ import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
 
 sealed class Screen(val route: String, val title: String) {
+    object Home : Screen("home", "Home")
     object Mood : Screen("mood", "Mood")
     object Lifestyle : Screen("lifestyle", "Lifestyle")
     object Feel : Screen("feel", "Feel")
@@ -43,6 +47,7 @@ sealed class Screen(val route: String, val title: String) {
 fun AppNavigation() {
     val navController = rememberNavController()
     val items = listOf(
+        Screen.Home,
         Screen.Mood,
         Screen.Lifestyle
     )
@@ -64,6 +69,13 @@ fun AppNavigation() {
                     NavigationBarItem(
                         icon = {
                             when (screen) {
+                                Screen.Home -> {
+                                    if (selected) {
+                                        Icon(Icons.Filled.Home, contentDescription = null)
+                                    } else {
+                                        Icon(Icons.Outlined.Home, contentDescription = null)
+                                    }
+                                }
                                 Screen.Mood -> {
                                     if (selected) {
                                         Icon(Icons.Filled.Face, contentDescription = null)
@@ -105,9 +117,31 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Mood.route,
+            startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Home.route) {
+                HomeScreen(
+                    onNavigateToMood = {
+                        navController.navigate(Screen.Mood.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onNavigateToLifestyle = {
+                        navController.navigate(Screen.Lifestyle.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
             composable(Screen.Mood.route) {
                 MoodScreen(
                     viewModel = moodViewModel,
