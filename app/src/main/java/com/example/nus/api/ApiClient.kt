@@ -1,5 +1,8 @@
 package com.example.nus.api
 
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -20,12 +23,29 @@ object ApiClient {
     // private const val BASE_URL = "http://192.168.1.100:8080/"
     private const val BASE_URL = "http://10.0.2.2:8080/"
     
+    // Cookie管理器，用于维持session
+    private val cookieJar = object : CookieJar {
+        private val cookieStore = mutableMapOf<String, List<Cookie>>()
+
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+            cookieStore[url.host] = cookies
+            println("Saved cookies for ${url.host}: ${cookies.map { "${it.name}=${it.value}" }}")
+        }
+
+        override fun loadForRequest(url: HttpUrl): List<Cookie> {
+            val cookies = cookieStore[url.host] ?: emptyList()
+            println("Loading cookies for ${url.host}: ${cookies.map { "${it.name}=${it.value}" }}")
+            return cookies
+        }
+    }
+
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
-    
+
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .cookieJar(cookieJar)  // 添加Cookie管理
         .connectTimeout(10, TimeUnit.SECONDS)  // 减少连接超时时间
         .readTimeout(15, TimeUnit.SECONDS)     // 减少读取超时时间
         .writeTimeout(15, TimeUnit.SECONDS)    // 减少写入超时时间
@@ -40,4 +60,5 @@ object ApiClient {
     
     val userApiService: UserApiService = retrofit.create(UserApiService::class.java)
     val journalApiService: JournalApiService = retrofit.create(JournalApiService::class.java)
+    val habitsApiService: HabitsApiService = retrofit.create(HabitsApiService::class.java)
 }

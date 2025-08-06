@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,10 +17,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +39,19 @@ import java.time.LocalDate
 @Composable
 fun LifestyleScreen(
     viewModel: LifestyleViewModel,
+    userId: String = "", // 从导航传入的用户ID
     onNavigateToLifestyleLogged: () -> Unit = {}
 ) {
     var sleepHours by remember { mutableStateOf("") }
     var waterLitres by remember { mutableStateOf("") }
     var workHours by remember { mutableStateOf("") }
+
+    // 设置用户ID
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            viewModel.setUserId(userId)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -139,13 +150,54 @@ fun LifestyleScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Error Message
+                viewModel.error.value?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+
                 // Save button
                 Button(
                     onClick = {
-                        // Here you can save the lifestyle data
-                        // You might want to convert strings to numbers and save them
-                        viewModel.saveLifestyleEntry()
-                        onNavigateToLifestyleLogged()
+                        // 验证并转换输入
+                        val sleepValue = sleepHours.toDoubleOrNull()
+                        val waterValue = waterLitres.toDoubleOrNull()
+                        val workValue = workHours.toDoubleOrNull()
+
+                        when {
+                            sleepValue == null || sleepValue <= 0 -> {
+                                viewModel.error.value = "Please enter valid sleep hours"
+                            }
+                            waterValue == null || waterValue < 0 -> {
+                                viewModel.error.value = "Please enter valid water amount"
+                            }
+                            workValue == null || workValue < 0 -> {
+                                viewModel.error.value = "Please enter valid work hours"
+                            }
+                            else -> {
+                                viewModel.submitHabitsEntry(
+                                    sleepHours = sleepValue,
+                                    waterLitres = waterValue,
+                                    workHours = workValue,
+                                    onSuccess = {
+                                        // 清空表单
+                                        sleepHours = ""
+                                        waterLitres = ""
+                                        workHours = ""
+                                        onNavigateToLifestyleLogged()
+                                    },
+                                    onError = { error ->
+                                        viewModel.error.value = error
+                                    }
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,13 +205,21 @@ fun LifestyleScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !viewModel.isLoading.value
                 ) {
-                    Text(
-                        text = "Save & Continue",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    if (viewModel.isLoading.value) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Save & Continue",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }

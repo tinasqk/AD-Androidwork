@@ -24,7 +24,7 @@ public class JournalController {
 	EntryService entryService;
 	
 	@PostMapping("/submit")
-	public ResponseEntity<?> submitJournalEntry(JournalEntryRequestDto request) {
+	public ResponseEntity<?> submitJournalEntry(@RequestBody JournalEntryRequestDto request) {
 		
 		try {
 			entryService.submitEntry(request);

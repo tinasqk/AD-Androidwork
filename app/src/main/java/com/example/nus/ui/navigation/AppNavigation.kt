@@ -198,6 +198,7 @@ fun AppNavigation() {
             composable(Screen.Lifestyle.route) {
                 LifestyleScreen(
                     viewModel = lifestyleViewModel,
+                    userId = userSessionViewModel.userId.value,
                     onNavigateToLifestyleLogged = {
                         navController.navigate(Screen.LifestyleLogged.route)
                     }
