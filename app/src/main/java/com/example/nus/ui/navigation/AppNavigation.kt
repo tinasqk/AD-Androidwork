@@ -30,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.nus.ui.screens.FeelScreen
 import com.example.nus.ui.screens.HomeScreen
+import com.example.nus.ui.screens.LifestyleLoggedScreen
 import com.example.nus.ui.screens.LifestyleScreen
 import com.example.nus.ui.screens.MoodScreen
 import com.example.nus.viewmodel.FeelViewModel
@@ -41,6 +42,7 @@ sealed class Screen(val route: String, val title: String) {
     object Mood : Screen("mood", "Mood")
     object Lifestyle : Screen("lifestyle", "Lifestyle")
     object Feel : Screen("feel", "Feel")
+    object LifestyleLogged : Screen("lifestyle_logged", "Lifestyle Logged")
 }
 
 @Composable
@@ -97,6 +99,13 @@ fun AppNavigation() {
                                         Icon(Icons.Outlined.FavoriteBorder, contentDescription = null)
                                     }
                                 }
+                                Screen.LifestyleLogged -> {
+                                    if (selected) {
+                                        Icon(Icons.Filled.Home, contentDescription = null)
+                                    } else {
+                                        Icon(Icons.Outlined.Home, contentDescription = null)
+                                    }
+                                }
                             }
                         },
                         label = { Text(screen.title) },
@@ -151,9 +160,14 @@ fun AppNavigation() {
                 )
             }
             composable(Screen.Lifestyle.route) {
-                LifestyleScreen(viewModel = lifestyleViewModel)
+                LifestyleScreen(
+                    viewModel = lifestyleViewModel,
+                    onNavigateToLifestyleLogged = {
+                        navController.navigate(Screen.LifestyleLogged.route)
+                    }
+                )
             }
-            composable(Screen.Feel.route) {
+            composable(Screen.Feel.route) { // 这里是导航回主页的方式
                 FeelScreen(
                     viewModel = feelViewModel,
                     onNavigateToHome = {
@@ -167,6 +181,19 @@ fun AppNavigation() {
                     }
                 )
             }
+            composable(Screen.LifestyleLogged.route) {
+                LifestyleLoggedScreen(
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
         }
     }
-} 
+}

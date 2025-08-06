@@ -34,7 +34,10 @@ import com.example.nus.viewmodel.LifestyleViewModel
 import java.time.LocalDate
 
 @Composable
-fun LifestyleScreen(viewModel: LifestyleViewModel) {
+fun LifestyleScreen(
+    viewModel: LifestyleViewModel,
+    onNavigateToLifestyleLogged: () -> Unit = {}
+) {
     var sleepHours by remember { mutableStateOf("") }
     var waterLitres by remember { mutableStateOf("") }
     var workHours by remember { mutableStateOf("") }
@@ -142,6 +145,7 @@ fun LifestyleScreen(viewModel: LifestyleViewModel) {
                         // Here you can save the lifestyle data
                         // You might want to convert strings to numbers and save them
                         viewModel.saveLifestyleEntry()
+                        onNavigateToLifestyleLogged()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
