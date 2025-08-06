@@ -32,12 +32,14 @@ import com.example.nus.ui.screens.FeelScreen
 import com.example.nus.ui.screens.HomeScreen
 import com.example.nus.ui.screens.LifestyleLoggedScreen
 import com.example.nus.ui.screens.LifestyleScreen
+import com.example.nus.ui.screens.LoginScreen
 import com.example.nus.ui.screens.MoodScreen
 import com.example.nus.viewmodel.FeelViewModel
 import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
 
 sealed class Screen(val route: String, val title: String) {
+    object Login : Screen("login", "Login")
     object Home : Screen("home", "Home")
     object Mood : Screen("mood", "Mood")
     object Lifestyle : Screen("lifestyle", "Lifestyle")
@@ -71,6 +73,13 @@ fun AppNavigation() {
                     NavigationBarItem(
                         icon = {
                             when (screen) {
+                                Screen.Login -> {
+                                    if (selected) {
+                                        Icon(Icons.Filled.Home, contentDescription = null)
+                                    } else {
+                                        Icon(Icons.Outlined.Home, contentDescription = null)
+                                    }
+                                }
                                 Screen.Home -> {
                                     if (selected) {
                                         Icon(Icons.Filled.Home, contentDescription = null)
@@ -126,9 +135,21 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Login.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onSignUpClick = {
+                        // TODO: Navigate to sign up screen
+                    }
+                )
+            }
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToMood = {
