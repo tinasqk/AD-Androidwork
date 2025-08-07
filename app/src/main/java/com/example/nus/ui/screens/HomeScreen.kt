@@ -42,11 +42,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HomeScreen(
     onNavigateToMood: () -> Unit = {},
-    onNavigateToLifestyle: () -> Unit = {}
+    onNavigateToLifestyle: () -> Unit = {},
+    onNavigateToJournal: () -> Unit = {} //navigate to JournalScreen
 ) {
     val currentDate = LocalDate.now()
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-    
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +55,7 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        // Header with date
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -66,7 +67,7 @@ fun HomeScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            
+
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
@@ -81,60 +82,52 @@ fun HomeScreen(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
-        // Welcome message
+
+        // Welcome
         Text(
             text = "Welcome back, Joe",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
-        
+
         Text(
             text = "Get started",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             modifier = Modifier.padding(top = 4.dp)
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
-        // Action cards
+
+        // Cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Write card
             ActionCard(
                 title = "Write",
                 subtitle = "Write To Journal",
                 description = "Record today",
                 icon = Icons.Default.Create,
-                backgroundColor = listOf(
-                    Color(0xFFD84315), // Deep orange
-                    Color(0xFFFF5722)  // Orange
-                ),
+                backgroundColor = listOf(Color(0xFFD84315), Color(0xFFFF5722)),
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToMood
             )
-            
-            // Read card
+
             ActionCard(
                 title = "Read",
                 subtitle = "Read Your Journal",
                 description = "Have a look at your past",
                 icon = Icons.AutoMirrored.Filled.MenuBook,
-                backgroundColor = listOf(
-                    Color(0xFFFF8F00), // Amber
-                    Color(0xFFFFC107)  // Yellow
-                ),
+                backgroundColor = listOf(Color(0xFFFF8F00), Color(0xFFFFC107)),
                 modifier = Modifier.weight(1f),
-                onClick = onNavigateToLifestyle
+                onClick = onNavigateToJournal // Updated to Journal
             )
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
@@ -160,9 +153,7 @@ private fun ActionCard(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = backgroundColor
-                    )
+                    brush = Brush.linearGradient(colors = backgroundColor)
                 )
                 .padding(16.dp)
         ) {
@@ -170,15 +161,13 @@ private fun ActionCard(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Icon
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
-                
-                // Content
+
                 Column {
                     Text(
                         text = title,
@@ -186,18 +175,14 @@ private fun ActionCard(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    
                     Spacer(modifier = Modifier.height(4.dp))
-                    
                     Text(
                         text = subtitle,
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    
                     Spacer(modifier = Modifier.height(8.dp))
-                    
                     Text(
                         text = description,
                         color = Color.White.copy(alpha = 0.9f),

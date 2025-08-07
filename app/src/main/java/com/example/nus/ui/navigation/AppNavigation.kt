@@ -1,44 +1,32 @@
 package com.example.nus.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Face
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.example.nus.ui.screens.FeelScreen
-import com.example.nus.ui.screens.HomeScreen
-import com.example.nus.ui.screens.LifestyleLoggedScreen
-import com.example.nus.ui.screens.LifestyleScreen
-import com.example.nus.ui.screens.LoginScreen
-import com.example.nus.ui.screens.MoodScreen
-import com.example.nus.ui.screens.RegisterScreen
+import androidx.navigation.compose.*
+import com.example.nus.ui.screens.*
 import com.example.nus.viewmodel.FeelViewModel
 import com.example.nus.viewmodel.LifestyleViewModel
 import com.example.nus.viewmodel.MoodViewModel
 import com.example.nus.viewmodel.UserSessionViewModel
+import com.example.nus.model.JournalEntry
+import com.example.nus.viewmodel.JournalViewModel
+
+
 
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Login")
@@ -48,11 +36,14 @@ sealed class Screen(val route: String, val title: String) {
     object Lifestyle : Screen("lifestyle", "Lifestyle")
     object Feel : Screen("feel", "Feel")
     object LifestyleLogged : Screen("lifestyle_logged", "Lifestyle Logged")
+    object Journal : Screen("journal", "Journal")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
     val items = listOf(
         Screen.Home,
         Screen.Mood,
@@ -64,21 +55,20 @@ fun AppNavigation() {
     val moodViewModel: MoodViewModel = viewModel()
     val lifestyleViewModel: LifestyleViewModel = viewModel()
     val feelViewModel: FeelViewModel = viewModel()
+    val journalViewModel: JournalViewModel = viewModel()
 
-    // 获取当前导航状态
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // 定义需要显示底部导航栏的页面
     val screensWithBottomBar = listOf(
         Screen.Home.route,
         Screen.Mood.route,
         Screen.Lifestyle.route,
         Screen.Feel.route,
-        Screen.LifestyleLogged.route
+        Screen.LifestyleLogged.route,
+        Screen.Journal.route
     )
 
-    // 检查当前页面是否需要显示底部导航栏
     val shouldShowBottomBar = currentDestination?.route in screensWithBottomBar
 
     Scaffold(
@@ -87,34 +77,13 @@ fun AppNavigation() {
                 NavigationBar {
                     items.forEach { screen ->
                         val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-
                         NavigationBarItem(
                             icon = {
                                 when (screen) {
-                                    Screen.Home -> {
-                                        if (selected) {
-                                            Icon(Icons.Filled.Home, contentDescription = null)
-                                        } else {
-                                            Icon(Icons.Outlined.Home, contentDescription = null)
-                                        }
-                                    }
-                                    Screen.Mood -> {
-                                        if (selected) {
-                                            Icon(Icons.Filled.Face, contentDescription = null)
-                                        } else {
-                                            Icon(Icons.Outlined.Face, contentDescription = null)
-                                        }
-                                    }
-                                    Screen.Lifestyle -> {
-                                        if (selected) {
-                                            Icon(Icons.Filled.DateRange, contentDescription = null)
-                                        } else {
-                                            Icon(Icons.Outlined.DateRange, contentDescription = null)
-                                        }
-                                    }
-                                    else -> {
-                                        Icon(Icons.Outlined.Home, contentDescription = null)
-                                    }
+                                    Screen.Home -> if (selected) Icon(Icons.Filled.Home, null) else Icon(Icons.Outlined.Home, null)
+                                    Screen.Mood -> if (selected) Icon(Icons.Filled.Face, null) else Icon(Icons.Outlined.Face, null)
+                                    Screen.Lifestyle -> if (selected) Icon(Icons.Filled.DateRange, null) else Icon(Icons.Outlined.DateRange, null)
+                                    else -> Icon(Icons.Outlined.Home, null)
                                 }
                             },
                             label = { Text(screen.title) },
@@ -152,6 +121,7 @@ fun AppNavigation() {
                     }
                 )
             }
+
             composable(Screen.Register.route) {
                 RegisterScreen(
                     onRegisterSuccess = {
@@ -164,28 +134,21 @@ fun AppNavigation() {
                     }
                 )
             }
+
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToMood = {
-                        navController.navigate(Screen.Mood.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navController.navigate(Screen.Mood.route)
                     },
                     onNavigateToLifestyle = {
-                        navController.navigate(Screen.Lifestyle.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navController.navigate(Screen.Lifestyle.route)
+                    },
+                    onNavigateToJournal = {  // added navigation to JournalScreen
+                        navController.navigate(Screen.Journal.route)
                     }
                 )
             }
+
             composable(Screen.Mood.route) {
                 MoodScreen(
                     viewModel = moodViewModel,
@@ -195,6 +158,7 @@ fun AppNavigation() {
                     }
                 )
             }
+
             composable(Screen.Lifestyle.route) {
                 LifestyleScreen(
                     viewModel = lifestyleViewModel,
@@ -204,7 +168,8 @@ fun AppNavigation() {
                     }
                 )
             }
-            composable(Screen.Feel.route) { // 这里是导航回主页的方式
+
+            composable(Screen.Feel.route) {
                 FeelScreen(
                     viewModel = feelViewModel,
                     onNavigateToHome = {
@@ -218,6 +183,7 @@ fun AppNavigation() {
                     }
                 )
             }
+
             composable(Screen.LifestyleLogged.route) {
                 LifestyleLoggedScreen(
                     onNavigateToHome = {
@@ -229,6 +195,13 @@ fun AppNavigation() {
                             restoreState = true
                         }
                     }
+                )
+            }
+
+            composable(Screen.Journal.route) {
+                JournalScreen(
+                    journalList = journalViewModel.journalList,
+                    navController = navController
                 )
             }
         }
