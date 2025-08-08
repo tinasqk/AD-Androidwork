@@ -25,6 +25,10 @@ import com.example.nus.viewmodel.MoodViewModel
 import com.example.nus.viewmodel.UserSessionViewModel
 import com.example.nus.model.JournalEntry
 import com.example.nus.viewmodel.JournalViewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.nus.ui.screens.JournalDetailScreen
+
 
 
 
@@ -37,6 +41,9 @@ sealed class Screen(val route: String, val title: String) {
     object Feel : Screen("feel", "Feel")
     object LifestyleLogged : Screen("lifestyle_logged", "Lifestyle Logged")
     object Journal : Screen("journal", "Journal")
+    object JournalDetail : Screen("journalDetail/{entryIndex}", "Detail"){
+        fun createRoute(index: Int) = "journalDetail/$index"
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -203,6 +210,15 @@ fun AppNavigation() {
                     journalList = journalViewModel.journalList,
                     navController = navController
                 )
+            }
+            composable(
+                Screen.JournalDetail.route,
+                arguments = listOf(navArgument("entryIndex") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val index = backStackEntry.arguments!!.getInt("entryIndex")
+                journalViewModel.journalList.getOrNull(index)?.let { entry ->
+                    JournalDetailScreen(entry = entry)
+                }
             }
         }
     }
